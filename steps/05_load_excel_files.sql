@@ -44,17 +44,17 @@ from openpyxl import load_workbook
 import pandas as pd
  
 def main(session, file_path, worksheet_name, target_table):
- with SnowflakeFile.open(file_path, 'rb') as f:
-     workbook = load_workbook(f)
-     sheet = workbook.get_sheet_by_name(worksheet_name)
+ with SnowflakeFile.open(file_path, 'rb') as f: # Snowflake reads the files from S3 (1 file selection and processing)
+     workbook = load_workbook(f) # S3 -> Download xlsx -> Load workbook 
+     sheet = workbook.get_sheet_by_name(worksheet_name) # 
      data = sheet.values
  
      # Get the first line in file as a header line
-     columns = next(data)[0:]
+     columns = next(data)[0:] # Columns are read -> Data is moved 1 time
      # Create a DataFrame based on the second and subsequent lines of data
-     df = pd.DataFrame(data, columns=columns)
+     df = pd.DataFrame(data, columns=columns) # 
  
-     df2 = session.create_dataframe(df)
+     df2 = session.create_dataframe(df) # Snowflake session: Converts dataframe -> Snowflake dataframe
      df2.write.mode("overwrite").save_as_table(target_table)
  
  return True
